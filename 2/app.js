@@ -87,6 +87,26 @@ app.patch("/api/v1/movies/:id", (req, res)=>{
 
 //DELETE - api/movies/:id
 app.delete("/api/v1/movies/:id", (req, res)=>{
+    let id = req.params.id*1;
+    let movieToDelete = movies.find(movie=>movie.id===id);
+    if(!movieToDelete){
+        return res.status(404).json({
+            status:"failed",
+            message:"Resource not found"
+        })
+    }
+    let index = movies.indexOf(movieToDelete);
+
+    movies.splice(index, 1);
+
+    fs.writeFile("./movies.json", JSON.stringify(movies),(err)=>{
+        res.status(200).json({
+            status:"success",
+            data:{
+                movie:movieToDelete
+            }
+        })
+    })
 
 })
 
