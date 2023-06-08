@@ -34,6 +34,30 @@ app.post("/api/v1/movies", (req, res)=>{
     // res.send("Created");
 })
 
+//GET - api/movies/:id(version1) - handling route parameter
+app.get("/api/v1/movies/:id/:name?", (req, res)=>{
+    // "/api/v1/movies/:id/:name?" - in this case name parameter is optional route parameter and won't raise error if missing and value of it in req.params will be undefined if missing
+    // console.log(req.params); - has all route params as its properties
+    const id = req.params.id*1; //makes it into number from string
+
+    let requestedMovie = movies.find(movie=>movie.id === id);
+
+    if(requestedMovie){
+        res.status(200).json({
+            status:"success",
+            data: {
+                movie:requestedMovie
+            }
+        })
+        return
+    }
+
+    res.status(404).json({
+        status:"failed",
+        message: `Movie with ID ${id} is not found.`
+    })
+})
+
 const PORT = 3000;
 app.listen(PORT, ()=>{
     console.log("Server is running");
