@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 
 let app = express();
-app.use(express.json());
+app.use(express.json()); //middleware
 
 let movies = JSON.parse(fs.readFileSync("./movies.json", "utf-8"));
 
