@@ -7,7 +7,7 @@ app.use(express.json()); //middleware
 let movies = JSON.parse(fs.readFileSync("./movies.json", "utf-8"));
 
 //GET - api/movies(version1)
-app.get("/api/v1/movies", (req, res)=>{
+const getAllMovies = (req, res)=>{
     res.status(200).json({
         status:"success",
         count:movies.length,
@@ -15,10 +15,11 @@ app.get("/api/v1/movies", (req, res)=>{
             movies:movies
         }
     });
-})
+}
+app.get("/api/v1/movies", getAllMovies);
 
 //POST - api/movies(version1)
-app.post("/api/v1/movies", (req, res)=>{
+const postMovie = (req, res)=>{
     // console.log(req.body);
     const newId = movies[movies.length-1].id + 1;
     let newMovie = Object.assign({id:newId}, req.body);
@@ -32,31 +33,29 @@ app.post("/api/v1/movies", (req, res)=>{
         })
     });
     // res.send("Created");
-})
+}
+app.post("/api/v1/movies", postMovie);
 
 //GET - api/movies/:id(version1) - handling route parameter
-app.get("/api/v1/movies/:id/:name?", (req, res)=>{
+const getMovie = (req, res)=>{
     // "/api/v1/movies/:id/:name?" - in this case name parameter is optional route parameter and won't raise error if missing and value of it in req.params will be undefined if missing
     // console.log(req.params); - has all route params as its properties
     const id = req.params.id*1; //makes it into number from string
-
     let requestedMovie = movies.find(movie=>movie.id === id);
-
     if(requestedMovie){
-        res.status(200).json({
+        return res.status(200).json({
             status:"success",
             data: {
                 movie:requestedMovie
             }
         })
-        return
     }
-
     res.status(404).json({
         status:"failed",
         message: `Movie with ID ${id} is not found.`
     })
-})
+}
+app.get("/api/v1/movies/:id/:name?", getMovie);
 
 //PUT VS PATCH
 //in put req, we send the entire updated data that updates the entire resource.
@@ -86,7 +85,7 @@ app.patch("/api/v1/movies/:id", (req, res)=>{
 })
 
 //DELETE - api/movies/:id
-app.delete("/api/v1/movies/:id", (req, res)=>{
+const deleteMovie = (req, res)=>{
     let id = req.params.id*1;
     let movieToDelete = movies.find(movie=>movie.id===id);
     if(!movieToDelete){
@@ -96,9 +95,7 @@ app.delete("/api/v1/movies/:id", (req, res)=>{
         })
     }
     let index = movies.indexOf(movieToDelete);
-
     movies.splice(index, 1);
-
     fs.writeFile("./movies.json", JSON.stringify(movies),(err)=>{
         res.status(200).json({
             status:"success",
@@ -107,8 +104,8 @@ app.delete("/api/v1/movies/:id", (req, res)=>{
             }
         })
     })
-
-})
+}
+app.delete("/api/v1/movies/:id", deleteMovie);
 
 const PORT = 3000;
 app.listen(PORT, ()=>{
