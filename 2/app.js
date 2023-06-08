@@ -6,7 +6,6 @@ app.use(express.json()); //middleware
 
 let movies = JSON.parse(fs.readFileSync("./movies.json", "utf-8"));
 
-//GET - api/movies(version1)
 const getAllMovies = (req, res)=>{
     res.status(200).json({
         status:"success",
@@ -16,11 +15,8 @@ const getAllMovies = (req, res)=>{
         }
     });
 }
-app.get("/api/v1/movies", getAllMovies);
 
-//POST - api/movies(version1)
-const postMovie = (req, res)=>{
-    // console.log(req.body);
+const createMovie = (req, res)=>{
     const newId = movies[movies.length-1].id + 1;
     let newMovie = Object.assign({id:newId}, req.body);
     movies.push(newMovie);
@@ -32,15 +28,10 @@ const postMovie = (req, res)=>{
             }
         })
     });
-    // res.send("Created");
 }
-app.post("/api/v1/movies", postMovie);
 
-//GET - api/movies/:id(version1) - handling route parameter
 const getMovie = (req, res)=>{
-    // "/api/v1/movies/:id/:name?" - in this case name parameter is optional route parameter and won't raise error if missing and value of it in req.params will be undefined if missing
-    // console.log(req.params); - has all route params as its properties
-    const id = req.params.id*1; //makes it into number from string
+    const id = req.params.id*1;
     let requestedMovie = movies.find(movie=>movie.id === id);
     if(requestedMovie){
         return res.status(200).json({
@@ -55,12 +46,8 @@ const getMovie = (req, res)=>{
         message: `Movie with ID ${id} is not found.`
     })
 }
-app.get("/api/v1/movies/:id/:name?", getMovie);
 
-//PUT VS PATCH
-//in put req, we send the entire updated data that updates the entire resource.
-//in patch req, we send the partial updated data that doesn't update the entire resource.
-app.patch("/api/v1/movies/:id", (req, res)=>{
+const updateMovie = (req, res)=>{
     let id = req.params.id*1;
     let movieToUpdate = movies.find(movie=>movie.id===id);
     if(!movieToUpdate){
@@ -70,10 +57,8 @@ app.patch("/api/v1/movies/:id", (req, res)=>{
         })
     }
     let index = movies.indexOf(movieToUpdate);
-
     Object.assign(movieToUpdate, req.body);
     movies[index] = movieToUpdate;
-
     fs.writeFile("./movies.json", JSON.stringify(movies),(err)=>{
         res.status(200).json({
             status:"success",
@@ -82,9 +67,8 @@ app.patch("/api/v1/movies/:id", (req, res)=>{
             }
         })
     })
-})
+}
 
-//DELETE - api/movies/:id
 const deleteMovie = (req, res)=>{
     let id = req.params.id*1;
     let movieToDelete = movies.find(movie=>movie.id===id);
@@ -105,7 +89,22 @@ const deleteMovie = (req, res)=>{
         })
     })
 }
-app.delete("/api/v1/movies/:id", deleteMovie);
+
+//optional route parameters are made like - /:name?
+// app.get("/api/v1/movies", getAllMovies);
+// app.post("/api/v1/movies", createMovie);
+// app.get("/api/v1/movies/:id", getMovie);
+// app.patch("/api/v1/movies/:id", updateMovie);
+// app.delete("/api/v1/movies/:id", deleteMovie);
+
+app.route("/api/v1/movies")
+    .get(getAllMovies)
+    .post(createMovie)
+
+app.route("/api/v1/movies/:id")
+    .get(getMovie)
+    .patch(updateMovie)
+    .delete(deleteMovie)
 
 const PORT = 3000;
 app.listen(PORT, ()=>{
