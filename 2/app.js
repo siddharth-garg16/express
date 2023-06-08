@@ -58,6 +58,38 @@ app.get("/api/v1/movies/:id/:name?", (req, res)=>{
     })
 })
 
+//PUT VS PATCH
+//in put req, we send the entire updated data that updates the entire resource.
+//in patch req, we send the partial updated data that doesn't update the entire resource.
+app.patch("/api/v1/movies/:id", (req, res)=>{
+    let id = req.params.id*1;
+    let movieToUpdate = movies.find(movie=>movie.id===id);
+    if(!movieToUpdate){
+        return res.status(404).json({
+            status:"failed",
+            message:"Resource not found"
+        })
+    }
+    let index = movies.indexOf(movieToUpdate);
+
+    Object.assign(movieToUpdate, req.body);
+    movies[index] = movieToUpdate;
+
+    fs.writeFile("./movies.json", JSON.stringify(movies),(err)=>{
+        res.status(200).json({
+            status:"success",
+            data:{
+                movie:movieToUpdate
+            }
+        })
+    })
+})
+
+//DELETE - api/movies/:id
+app.delete("/api/v1/movies/:id", (req, res)=>{
+
+})
+
 const PORT = 3000;
 app.listen(PORT, ()=>{
     console.log("Server is running");
