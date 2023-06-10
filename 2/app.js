@@ -1,14 +1,27 @@
 const express = require('express');
 const fs = require('fs');
-
+const morgan = require('morgan');
+//go through the properties available on response and request object from express docs
+const logger = (req, res, next)=>{
+    console.log("Custom Middleware"); //middle always receive three arguments
+    next();
+}
+//we specified () in other middlewares because they return a function that will work as he middleware
 let app = express();
 app.use(express.json()); //middleware
+app.use(logger); //custom middleware
+app.use((req, res, next)=>{
+    req.requestedAt = new Date().toISOString();
+    next();
+})
+app.use(morgan('dev')); //third party middleware
 
 let movies = JSON.parse(fs.readFileSync("./movies.json", "utf-8"));
 
 const getAllMovies = (req, res)=>{
     res.status(200).json({
         status:"success",
+        requestedAt:req.requestedAt, //using middle ware here
         count:movies.length,
         data:{
             movies:movies
